@@ -29,6 +29,13 @@ body {
 <body>
 <?php
 
+// PHP 8 function support for PHP 7.4
+if ( ! function_exists( 'str_contains' ) ) {
+  function str_contains( string $haystack, string $needle ) : bool { // phpcs:ignore
+    return '' === $needle || false !== strpos( $haystack, $needle );
+  }
+}
+
 // Define things
 $token = $_ENV['YNAB_PERSONAL_ACCESS_TOKEN'];
 $budgetId = $_ENV['YNAB_BUDGET_ID'];
@@ -39,12 +46,39 @@ $base = 'https://api.youneedabudget.com/v1/budgets';
 
 curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
 curl_setopt( $ch, CURLOPT_HTTPHEADER, [ "Authorization: Bearer $token" ] );
+// TODO: Add since_date as dynamic (this month)
 curl_setopt( $ch, CURLOPT_URL, $base . '/' . $budgetId . '/transactions?since_date=2022-08-01' );
-$response = curl_exec( $ch );
+// TODO: Learn how to call multiple endpoints
+// TODO: Get budgeted amount for this month
+// $months = curl_setopt( $ch, CURLOPT_URL, $base . '/' . $budgetId . '/months' );
+$result = curl_exec( $ch );
+$response = json_decode( $result, true );
 
-// Get api response code
-var_dump( $response );
+$incomeItems = [
+  '2411.10', // Palkka
+  '679.20', // Työkkärituki
+  '199.72', // Lapsilisä
+  '416.91', // Lapsilisä
+  '1246.44', // Veronpalautus
+];
+$income = array_sum( $incomeItems );
 
+$transactionItems = 0;
+foreach ( $response as $item ) {
+  foreach ( $item['transactions'] as $transaction ) {
+
+    // Sum all amounts together
+    if ( ! str_contains( $transaction['category_name'], 'Inflow' ) ) {
+      $transactionItems += $transaction['amount'];
+    }
+  }
+}
+$transactions = abs( $transactionItems / 1000 );
+echo $transactions . '<br>';
+echo $income . '<br>';
+echo $income - $transactions;
+
+curl_close( $ch );
 ?>
 </body>
 </html>
