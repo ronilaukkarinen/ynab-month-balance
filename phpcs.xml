@@ -104,6 +104,7 @@
         <exclude name="WordPress.Security" />
         <exclude name="WordPress.NamingConventions" />
         <exclude name="WordPress.PHP" />
+        <exclude name="WordPress.DateTime" />
 
         <!-- Project based -->
         <exclude name="Squiz.PHP.CommentedOutCode.Found" />
