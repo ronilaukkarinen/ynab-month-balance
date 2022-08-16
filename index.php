@@ -55,6 +55,7 @@ body {
 .label {
   display: block;
   font-size: 14px;
+  line-height: 1.5;
   opacity: .5;
 }
 
