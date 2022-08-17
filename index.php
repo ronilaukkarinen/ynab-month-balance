@@ -45,8 +45,9 @@ $dotenv->load();
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <style type="text/css">
 :root {
-  --color-red: #ec1b4b;
+  --color-neutral: #96cde4;
   --color-green: #1ccc5c;
+  --color-red: #ec1b4b;
 }
 
 body {
@@ -59,6 +60,10 @@ body {
   font-size: 32px;
   opacity: .7;
   font-weight: 400;
+}
+
+.neutral {
+  color: var(--color-neutral);
 }
 
 .red {
@@ -294,9 +299,9 @@ $substraction = ( $income - $transactions ) - $underfunded;
   </div>
 
   <p class="explanation">
-    <span>Tämän kuun tulot on <?php echo round( $income, 2 ); ?> &euro;<br></span>
-    <span style="display: none;">Tälle kuulle budjetoitu <?php echo round( $budgeted, 2 ); ?> &euro;<br></span>
-    <span>Rahaa käytetty <?php echo round( $transactions, 2 ); ?> &euro;<br></span>
+    <span>Tämän kuun tulot on <b style="font-weight: 500;" class="neutral"><?php echo round( $income, 2 ); ?> &euro;</b><br></span>
+    <span style="display: none;">Tälle kuulle budjetoitu <b style="font-weight: 500;" class="neutral"><?php echo round( $budgeted, 2 ); ?> &euro;</b><br></span>
+    <span>Rahaa käytetty <b style="font-weight: 500;" class="neutral"><?php echo round( $transactions, 2 ); ?> &euro;</b><br></span>
     <span>Tuloista kulujen jälkeen jää vielä <b style="font-weight: 500;" class="green"><?php echo round( $income - $transactions, 2 ); ?> &euro;</b><br></span>
     <span>Tässä kuussa tarvitaan vielä <b style="font-weight: 500;" class="green"><?php echo round( $underfunded, 2 ); ?> &euro;</b><br></span>
   </p>
