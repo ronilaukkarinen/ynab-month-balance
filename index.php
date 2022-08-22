@@ -279,12 +279,11 @@ $substraction = ( $income - $transactions ) - $underfunded;
 
 <div class="item">
   <?php
+    $msg = 'jää säästöön';
     if ( $substraction > 0 ) {
       $class = 'green';
-      $msg = 'ali varojen';
     } else {
       $class = 'red';
-      $msg = 'yli varojen';
     }
 
     echo '<span class="pre ' . $class . '">Elät</span><span class="value ' . $class . '">' . abs( $substraction ) . ' <span class="unit">&euro;</span></span>';
