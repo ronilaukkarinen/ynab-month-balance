@@ -282,13 +282,15 @@ $substraction = ( $income - $transactions ) - $underfunded;
     $msg = 'jää säästöön';
     if ( $substraction > 0 ) {
       $class = 'green';
+      $substraction = '+' . abs( $substraction );
     } else {
       $class = 'red';
+      $substraction = $substraction;
     }
 
-    echo '<span class="pre ' . $class . '">Elät</span><span class="value ' . $class . '">' . abs( $substraction ) . ' <span class="unit">&euro;</span></span>';
+    echo '<span class="value ' . $class . '">' . $substraction . ' <span class="unit">&euro;</span></span>';
   ?>
-  <span class="label <?php echo $class; ?>"><?php echo $msg; ?></span>
+  <span class="label <?php echo $class; ?>" style="display: none;"><?php echo $msg; ?></span>
 
   <div class="progress-bar" style="display: none;">
     <div class="progress-bar-expenses" style="width: <?php echo round( ( $budgeted / $income ) * 100, 0 ); ?>%">
