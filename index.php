@@ -2,16 +2,16 @@
 // List this month's income
 if ( '2022-08' === date( 'Y-m' ) ) {
   $incomeItems = [
-    '2800', // Palkka
+    '2870', // Palkka
     '679.20', // Työkkärituki
     '199.72', // Lapsilisä
     '446.81', // Vammaistuki
     '150.00', // Vuokravakuus
-    '1246.44', // Veronpalautus
+    '1246.44', // Veronpalautukset
   ];
 } else {
   $incomeItems = [
-    '2800', // Palkka
+    '2870', // Palkka
     '679.20', // Työkkärituki
     '199.72', // Lapsilisä
     '446.81', // Vammaistuki
