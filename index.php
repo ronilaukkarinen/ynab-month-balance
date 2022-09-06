@@ -187,6 +187,20 @@ if ( ! function_exists( 'str_contains' ) ) {
   }
 }
 
+/**
+ * Fucntion: array_contains
+ * Check if string contains word from array.
+ *
+ * @since 1.0.0
+ * @version 1.0.0
+**/
+function array_contains( $str, array $arr ) {
+  foreach ( $arr as $a ) {
+      if ( stripos( $str, $a ) !== false ) return true;
+  }
+  return false;
+}
+
 // Define things
 $budgetId = $_ENV['YNAB_BUDGET_ID'];
 
@@ -262,8 +276,17 @@ $transactionItems = 0;
 foreach ( $response_budgets as $budget ) {
   foreach ( $budget['transactions'] as $transaction ) {
 
+    $ignored_accounts = [
+      'e902b887-bc20-4eed-ae82-c36a8f8505d6',
+      'e2662f83-0ddf-4275-be3c-6e90cf4006f8',
+      '8e0bcb4d-d623-4ba7-a29f-c949b4a16282',
+      'c54bf70e-62b7-4507-acdf-e07e1cab60bb',
+      '66c28b83-f66d-40c0-a771-aa06f28c633e',
+      'df28aa6c-e99c-40a3-b070-a61d2d978943',
+    ];
+
     // Sum all amounts together
-    if ( ! str_contains( $transaction['category_name'], 'Inflow' ) ) {
+    if ( ! array_contains( $transaction['account_id'], $ignored_accounts ) && ! str_contains( $transaction['category_name'], 'Inflow' ) ) {
       $transactionItems += $transaction['amount'];
     }
   }
