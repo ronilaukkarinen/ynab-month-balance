@@ -74,6 +74,14 @@ body {
   color: var(--color-green);
 }
 
+.background-red {
+  background-color: var(--color-red);
+}
+
+.background-green {
+  background-color: var(--color-green);
+}
+
 .value {
   display: inline-block;
   font-size: 80px;
@@ -129,19 +137,19 @@ body {
 .progress-bar,
 .progress-bar-expenses {
   border-radius: 4px;
-  height: 22px;
+  height: 4px;
   white-space: nowrap;
 }
 
 .progress-bar {
   background-color: rgba(255 255 255 / .2);
   margin-top: 20px;
-  max-width: 600px;
+  max-width: 275px;
   width: 100%;
+  display: none;
 }
 
 .progress-bar-expenses {
-  background-color: #85253b;
   padding: 0 5px;
   display: flex;
   align-items: center;
@@ -151,6 +159,7 @@ body {
   color: #fff;
   font-weight: 600;
   display: inline-block;
+  display: none;
   font-size: 13px;
   margin-right: 10px;
 }
@@ -158,6 +167,7 @@ body {
 .progress-bar-label {
   color: #fff;
   display: inline-block;
+  display: none;
   font-size: 10px;
   opacity: .5;
 }
@@ -316,8 +326,8 @@ $substraction = ( $income - $transactions ) - $underfunded;
   ?>
   <span class="label <?php echo $class; ?>" style="display: none;"><?php echo $msg; ?></span>
 
-  <div class="progress-bar" style="display: none;">
-    <div class="progress-bar-expenses" style="width: <?php echo round( ( $budgeted / $income ) * 100, 0 ); ?>%">
+  <div class="progress-bar">
+    <div class="progress-bar-expenses background-<?php echo $class; ?>" style="width: <?php echo round( ( $budgeted / $income ) * 100, 0 ); ?>%">
       <span class="progress-bar-value"><?php echo round( $budgeted, 0 ); ?> &euro; / <?php echo round( $income, 0 ); ?> &euro;</span>
       <span class="progress-bar-label">Menot / Tulot</span>
     </div>
