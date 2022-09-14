@@ -2,7 +2,7 @@
 // List this month's income
 if ( '2022-08' === date( 'Y-m' ) ) {
   $incomeItems = [
-    '2870', // Palkka
+    '2866.40', // Palkka
     '679.20', // Työkkärituki
     '199.72', // Lapsilisä
     '446.81', // Vammaistuki
@@ -11,7 +11,7 @@ if ( '2022-08' === date( 'Y-m' ) ) {
   ];
 } else {
   $incomeItems = [
-    '2870', // Palkka
+    '2866.40', // Palkka
     '679.20', // Työkkärituki
     '199.72', // Lapsilisä
     '446.81', // Vammaistuki
