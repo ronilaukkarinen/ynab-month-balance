@@ -311,7 +311,8 @@ $substraction = ( $income - $transactions ) - $underfunded;
       $substraction = $substraction;
     }
 
-    echo '<span class="value ' . $class . '">' . $substraction . ' <span class="unit">&euro;</span></span>';
+    $balance = number_format( (float) $substraction, 2, ',', '' );
+    echo '<span class="value ' . $class . '">' . $balance . ' <span class="unit">&euro;</span></span>';
   ?>
   <span class="label <?php echo $class; ?>" style="display: none;"><?php echo $msg; ?></span>
 
