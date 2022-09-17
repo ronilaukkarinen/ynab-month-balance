@@ -378,7 +378,7 @@ $substraction = $income - $expenses;
         $timestamp = strtotime( 'now' );
         $days_remaining_this_month = (int) date( 't', $timestamp ) - (int) date( 'j', $timestamp );
       ?>
-      <span class="sub-label <?php echo $class; ?>">Käteen jäävä raha (tulot miinus menot)</span></span>
+      <span class="sub-label <?php echo $class; ?>">Säästöön jäävä summa (tulot miinus menot)</span></span>
     </p>
   </div><br>
 
