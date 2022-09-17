@@ -290,6 +290,7 @@ $response_months = json_decode( $get_months, true );
 $underfunded = 0;
 $food_money_available = 0;
 $budgeted_income = 0;
+$currently_available = 0;
 
 foreach ( $response_months as $month ) {
 
@@ -297,6 +298,12 @@ foreach ( $response_months as $month ) {
   $budgeted_income = abs( $month['month']['income'] / 1000 );
 
   foreach ( $month['month']['categories'] as $category ) {
+
+    // All money currently available
+    // If is not ASP, income deleted or hidden
+    if ( ! str_contains( $category['name'], 'Inflow' ) && '85ee6c02-bcdc-471e-886a-9b9fcd7f4df7' !== $category['id'] && false === $category['hidden'] && false === $category['deleted'] ) {
+      $currently_available += $category['balance'] / 1000;
+    }
 
     // Food category
     if ( 'f6824431-03d1-4230-80de-126b66bac5d2' === $category['id'] ) {
@@ -316,9 +323,6 @@ foreach ( $response_scheduled as $scheduled ) {
     }
   }
 }
-
-// Get all income in total
-$income = abs( $income_items / 1000 ) + $budgeted_income;
 
 // Get this month's transactions
 $transaction_items = 0;
@@ -347,9 +351,11 @@ foreach ( $response_budgets as $budget ) {
 // Get right amounts
 $underfunded = $underfunded / 1000;
 $transactions = abs( $transaction_items / 1000 );
+$income = abs( $income_items / 1000 ) + $budgeted_income;
+$expenses = $transactions + $underfunded;
 
 // Calculate
-$substraction = ( $income - $transactions ) - $underfunded;
+$substraction = $income - $expenses;
 ?>
 
 <div class="item">
@@ -385,7 +391,8 @@ $substraction = ( $income - $transactions ) - $underfunded;
 
   <p class="explanation">
     <span>Tämän kuun tulot on <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $income, 2, ',', '' ); ?> &euro;</b><br></span>
-    <span>Tämän kuun menot on <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $transactions + $underfunded, 2, ',', '' ); ?> &euro;</b><br></span>
+    <span>Tämän kuun menot on <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $expenses, 2, ',', '' ); ?> &euro;</b><br></span>
+    <span>Vapaassa käytössä rahaa on juuri nyt <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $currently_available, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Ruokabudjetti loppukuulle <?php echo $days_remaining_this_month; ?> päivälle <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $food_money_available, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Rahaa käytetty tähän mennessä <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $transactions, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Tuloista kulujen jälkeen jää vielä <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $income - $transactions, 2, ',', '' ); ?> &euro;</b><br></span>
