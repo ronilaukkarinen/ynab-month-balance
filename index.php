@@ -1,23 +1,4 @@
 <?php
-// List this month's income
-if ( '2022-08' === date( 'Y-m' ) ) {
-  $incomeItems = [
-    '2866.40', // Palkka
-    '679.20', // Työkkärituki
-    '199.72', // Lapsilisä
-    '446.81', // Vammaistuki
-    '150.00', // Vuokravakuus
-    '1246.44', // Veronpalautukset
-  ];
-} else {
-  $incomeItems = [
-    '2866.40', // Palkka
-    '679.20', // Työkkärituki
-    '199.72', // Lapsilisä
-    '446.81', // Vammaistuki
-  ];
-}
-
 // Require composer
 require __DIR__ . '/vendor/autoload.php';
 
@@ -297,24 +278,27 @@ $base = 'https://api.youneedabudget.com/v1/';
 $get_budgets = callAPI( 'GET', $base . '/budgets/' . $budgetId . '/transactions?since_date=' . date( 'Y-m' ) . '-01', false );
 $response_budgets = json_decode( $get_budgets, true );
 
+// Get scheduled transactions
+$get_scheduled = callAPI( 'GET', $base . '/budgets/' . $budgetId . '/scheduled_transactions?since_date=' . date( 'Y-m' ) . '-01', false );
+$response_scheduled = json_decode( $get_scheduled, true );
+
 // Get budgeted amount this month
 $get_months = callAPI( 'GET', $base . '/budgets/' . $budgetId . '/months/' . date( 'Y-m' ) . '-01', false );
 $response_months = json_decode( $get_months, true );
 
-$income = array_sum( $incomeItems );
-
 // Get this month's amounts
 $underfunded = 0;
-$budgeted = 0;
 $food_money_available = 0;
+$budgeted_income = 0;
 
 foreach ( $response_months as $month ) {
 
-  $budgeted = $month['month']['budgeted'] / 1000;
-  $activity = abs( $month['month']['activity'] / 1000 );
+  // Get income that has been already received this month so far
+  $budgeted_income = abs( $month['month']['income'] / 1000 );
 
   foreach ( $month['month']['categories'] as $category ) {
 
+    // Food category
     if ( 'f6824431-03d1-4230-80de-126b66bac5d2' === $category['id'] ) {
       $food_money_available += $category['balance'] / 1000;
     }
@@ -323,11 +307,27 @@ foreach ( $response_months as $month ) {
   }
 }
 
+// Get scheduled transactions
+$income_items = 0;
+foreach ( $response_scheduled as $scheduled ) {
+  foreach ( $scheduled['scheduled_transactions'] as $scheduled_transaction ) {
+    if ( str_contains( $scheduled_transaction['category_name'], 'Inflow' ) && str_contains( $scheduled_transaction['date_next'], date( 'Y-m' ) ) ) {
+      $income_items += $scheduled_transaction['amount'];
+    }
+  }
+}
+
+// Get all income in total
+$income = abs( $income_items / 1000 ) + $budgeted_income;
+
 // Get this month's transactions
-$transactionItems = 0;
+$transaction_items = 0;
 foreach ( $response_budgets as $budget ) {
+
+  // Get transactions
   foreach ( $budget['transactions'] as $transaction ) {
 
+    // Ignore investments
     $ignored_accounts = [
       'e902b887-bc20-4eed-ae82-c36a8f8505d6',
       'e2662f83-0ddf-4275-be3c-6e90cf4006f8',
@@ -339,14 +339,14 @@ foreach ( $response_budgets as $budget ) {
 
     // Sum all amounts together
     if ( ! array_contains( $transaction['account_id'], $ignored_accounts ) && ! str_contains( $transaction['category_name'], 'Inflow' ) ) {
-      $transactionItems += $transaction['amount'];
+      $transaction_items += $transaction['amount'];
     }
   }
 }
 
 // Get right amounts
 $underfunded = $underfunded / 1000;
-$transactions = abs( $transactionItems / 1000 );
+$transactions = abs( $transaction_items / 1000 );
 
 // Calculate
 $substraction = ( $income - $transactions ) - $underfunded;
@@ -387,7 +387,6 @@ $substraction = ( $income - $transactions ) - $underfunded;
     <span>Tämän kuun tulot on <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $income, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Tämän kuun menot on <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $transactions + $underfunded, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Ruokabudjetti loppukuulle <?php echo $days_remaining_this_month; ?> päivälle <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $food_money_available, 2, ',', '' ); ?> &euro;</b><br></span>
-    <span style="display: none;">Tälle kuulle budjetoitu <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $budgeted, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Rahaa käytetty tähän mennessä <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $transactions, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Tuloista kulujen jälkeen jää vielä <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $income - $transactions, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Tässä kuussa tarvitaan vielä <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $underfunded, 2, ',', '' ); ?> &euro;</b><br></span>
