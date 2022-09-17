@@ -176,10 +176,9 @@ body {
 }
 
 .item-wrapper-alt {
-  background: rgb(255 255 255 / .08);
   border-radius: 10px;
-  padding: 21px 30px;
-  margin: 10px 0;
+  padding: 0;
+  margin: 15px 0;
   width: auto;
   display: inline-flex;
 }
@@ -193,7 +192,7 @@ body {
 }
 
 .item-wrapper-alt .value {
-  font-size: 52px;
+  font-size: 62px;
   margin: 0;
 }
 
