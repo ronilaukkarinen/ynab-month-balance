@@ -197,7 +197,7 @@ body {
 }
 
 .item-wrapper-alt .unit {
-  font-size: 16px;
+  font-size: 22px;
 }
 
 .sub-label {
@@ -372,14 +372,14 @@ $substraction = ( $income - $transactions ) - $underfunded;
         $timestamp = strtotime( 'now' );
         $days_remaining_this_month = (int) date( 't', $timestamp ) - (int) date( 'j', $timestamp );
       ?>
-      <span class="sub-label <?php echo $class; ?>">Rahatilanne nyt</span></span>
+      <span class="sub-label <?php echo $class; ?>">Käteen jäävä raha (tulot miinus menot)</span></span>
     </p>
   </div><br>
 
   <div class="item-wrapper item-wrapper-alt">
     <p>
       <span class="value green"><?php echo number_format( (float) $food_money_available / $days_remaining_this_month, 2, ',', '' ); ?> <span class="unit">&euro;</span></span><br />
-      <span class="sub-label green">Reaaliaikainen päiväbudjetti</span></span>
+      <span class="sub-label green">Reaaliaikainen päiväbudjetti ruokaan</span></span>
     </p>
   </div>
 
