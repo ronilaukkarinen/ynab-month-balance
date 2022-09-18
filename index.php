@@ -28,7 +28,7 @@ $dotenv->load();
 :root {
   --color-neutral: #96cde4;
   --color-green: #1ccc5c;
-  --color-red: #ec1b4b;
+  --color-red: #df345b;
 }
 
 body {
