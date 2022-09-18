@@ -291,6 +291,8 @@ $underfunded = 0;
 $food_money_available = 0;
 $budgeted_income = 0;
 $currently_available = 0;
+$goal_target = 0;
+$goal_overall_funded = 0;
 
 foreach ( $response_months as $month ) {
 
@@ -299,9 +301,10 @@ foreach ( $response_months as $month ) {
 
   foreach ( $month['month']['categories'] as $category ) {
 
-    // All money currently available
     // If is not ASP, income deleted or hidden
     if ( ! str_contains( $category['name'], 'Inflow' ) && '85ee6c02-bcdc-471e-886a-9b9fcd7f4df7' !== $category['id'] && false === $category['hidden'] && false === $category['deleted'] ) {
+
+      // All money currently available
       $currently_available += $category['balance'] / 1000;
     }
 
@@ -310,6 +313,7 @@ foreach ( $response_months as $month ) {
       $food_money_available += $category['balance'] / 1000;
     }
 
+    // Get underfunded
     $underfunded += $category['goal_under_funded'];
   }
 }
