@@ -8,8 +8,8 @@ setlocale( LC_ALL, 'fi_FI.UTF-8' );
 setlocale( LC_TIME, 'fi_FI.UTF-8' );
 
 // Set errors
-ini_set( 'display_errors', 1 );
-ini_set( 'display_startup_errors', 1 );
+ini_set( 'display_errors', 0 );
+ini_set( 'display_startup_errors', 0 );
 
 // Set up phpdotenv
 $dotenv = \Dotenv\Dotenv::createImmutable( __DIR__ );
@@ -102,6 +102,13 @@ body {
   font-size: 13px;
   line-height: 1.77;
   margin: 15px 0 0 0;
+}
+
+.last-modified {
+  color: #51555c;
+  font-size: 12px;
+  margin-top: 45px;
+  margin-bottom: 0;
 }
 
 .powered:hover {
@@ -205,11 +212,10 @@ body {
 <body>
 <div class="wrapper">
 <?php
-
 // PHP 8 function support for PHP 7.4
 if ( ! function_exists( 'str_contains' ) ) {
   function str_contains( string $haystack, string $needle ) : bool { // phpcs:ignore
-    return '' === $needle || false !== strpos( $haystack, $needle );
+		return '' === $needle || false !== strpos( $haystack, $needle );
   }
 }
 
@@ -222,7 +228,7 @@ if ( ! function_exists( 'str_contains' ) ) {
 **/
 function array_contains( $str, array $arr ) {
   foreach ( $arr as $a ) {
-      if ( stripos( $str, $a ) !== false ) return true;
+		if ( stripos( $str, $a ) !== false ) return true;
   }
   return false;
 }
@@ -236,21 +242,21 @@ function callAPI( $method, $url, $data ) {
   $curl = curl_init();
 
   switch ( $method ) {
-    case 'POST':
-      curl_setopt( $curl, CURLOPT_POST, 1 );
+		case 'POST':
+		  curl_setopt( $curl, CURLOPT_POST, 1 );
 
-      if ( $data )
-        curl_setopt( $curl, CURLOPT_POSTFIELDS, $data );
-        break;
-    case 'PUT':
-      curl_setopt( $curl, CURLOPT_CUSTOMREQUEST, 'PUT' );
+		  if ( $data )
+			curl_setopt( $curl, CURLOPT_POSTFIELDS, $data );
+			break;
+		case 'PUT':
+		  curl_setopt( $curl, CURLOPT_CUSTOMREQUEST, 'PUT' );
 
-      if ($data)
-        curl_setopt( $curl, CURLOPT_POSTFIELDS, $data );
-        break;
-    default:
-      if ($data)
-        $url = sprintf( '%s?%s', $url, http_build_query( $data ) );
+		  if ($data)
+			curl_setopt( $curl, CURLOPT_POSTFIELDS, $data );
+			break;
+		default:
+		  if ($data)
+			$url = sprintf( '%s?%s', $url, http_build_query( $data ) );
     }
 
   // Options
@@ -272,11 +278,13 @@ function callAPI( $method, $url, $data ) {
 // Curl base URL
 $base = 'https://api.youneedabudget.com/v1/';
 
-// $months = curl_setopt( $ch, CURLOPT_URL, $base . '/' . $budgetId . '/months' );
-
 // Get budgets
-$get_budgets = callAPI( 'GET', $base . '/budgets/' . $budgetId . '/transactions?since_date=' . date( 'Y-m' ) . '-01', false );
-$response_budgets = json_decode( $get_budgets, true );
+$get_budgets = callAPI( 'GET', $base . '/budgets/?include_accounts=true', false );
+$response_budget = json_decode( $get_budgets, true );
+
+// Get budget transactions
+$get_budget_transactions = callAPI( 'GET', $base . '/budgets/' . $budgetId . '/transactions?since_date=' . date( 'Y-m' ) . '-01', false );
+$response_budget_transactions = json_decode( $get_budget_transactions, true );
 
 // Get scheduled transactions
 $get_scheduled = callAPI( 'GET', $base . '/budgets/' . $budgetId . '/scheduled_transactions?since_date=' . date( 'Y-m' ) . '-01', false );
@@ -294,6 +302,50 @@ $currently_available = 0;
 $goal_target = 0;
 $goal_overall_funded = 0;
 
+// Time since function
+function get_time_ago( $time ) {
+  $time_difference = time() - $time;
+
+  if ( $time_difference < 100 ) { return 'Budjettia päivitetty viimeksi hetki sitten'; }
+  $condition = array(
+    12 * 30 * 24 * 60 * 60  => 'vuosi',
+    30 * 24 * 60 * 60       => 'kuukausi',
+    24 * 60 * 60            => 'päivä',
+    60 * 60                 => 'tunti',
+    60                      => 'minuutti',
+    1                       => 'sekuntti',
+  );
+
+  foreach ( $condition as $secs => $str ) {
+    $d = $time_difference / $secs;
+    if ( $d >= 1 ) {
+      $t = round( $d );
+      if ( 'tunti' === $str && $t > 1 ) {
+        $str = 'tuntia';
+      } elseif ( 'päivä' === $str && $t > 1 ) {
+        $str = 'päivää';
+      } elseif ( 'minuutti' === $str && $t > 1 ) {
+        $str = 'minuuttia';
+      }
+      return 'Budjettia päivitetty viimeksi ' . $t . ' ' . $str . ' sitten';
+    }
+  }
+}
+
+// Get budget info
+$budget_last_updated = 0;
+foreach ( $response_budget as $budgets ) {
+  foreach ( $budgets as $budgetlist ) {
+		foreach ( $budgetlist as $budget ) {
+		  if ( '24d3a66a-0a98-4677-8875-c6d12986480a' === $budget['id'] ) {
+				$last_modified_time = strtotime( $budget['last_modified_on'] );
+				$budget_last_updated = get_time_ago( $last_modified_time );
+		  }
+		}
+  }
+}
+
+// Get months
 foreach ( $response_months as $month ) {
 
   // Get income that has been already received this month so far
@@ -301,20 +353,20 @@ foreach ( $response_months as $month ) {
 
   foreach ( $month['month']['categories'] as $category ) {
 
-    // If is not ASP, income deleted or hidden
-    if ( ! str_contains( $category['name'], 'Inflow' ) && '85ee6c02-bcdc-471e-886a-9b9fcd7f4df7' !== $category['id'] && false === $category['hidden'] && false === $category['deleted'] ) {
+		// If is not ASP, income deleted or hidden
+		if ( ! str_contains( $category['name'], 'Inflow' ) && '85ee6c02-bcdc-471e-886a-9b9fcd7f4df7' !== $category['id'] && false === $category['hidden'] && false === $category['deleted'] ) {
 
-      // All money currently available
-      $currently_available += $category['balance'] / 1000;
-    }
+		  // All money currently available
+		  $currently_available += $category['balance'] / 1000;
+			}
 
-    // Food category
-    if ( 'f6824431-03d1-4230-80de-126b66bac5d2' === $category['id'] ) {
-      $food_money_available += $category['balance'] / 1000;
-    }
+		// Food category
+		if ( 'f6824431-03d1-4230-80de-126b66bac5d2' === $category['id'] ) {
+		  $food_money_available += $category['balance'] / 1000;
+			}
 
-    // Get underfunded
-    $underfunded += $category['goal_under_funded'];
+		// Get underfunded
+		$underfunded += $category['goal_under_funded'];
   }
 }
 
@@ -322,33 +374,33 @@ foreach ( $response_months as $month ) {
 $income_items = 0;
 foreach ( $response_scheduled as $scheduled ) {
   foreach ( $scheduled['scheduled_transactions'] as $scheduled_transaction ) {
-    if ( str_contains( $scheduled_transaction['category_name'], 'Inflow' ) && str_contains( $scheduled_transaction['date_next'], date( 'Y-m' ) ) ) {
-      $income_items += $scheduled_transaction['amount'];
-    }
+		if ( str_contains( $scheduled_transaction['category_name'], 'Inflow' ) && str_contains( $scheduled_transaction['date_next'], date( 'Y-m' ) ) ) {
+		  $income_items += $scheduled_transaction['amount'];
+			}
   }
 }
 
 // Get this month's transactions
 $transaction_items = 0;
-foreach ( $response_budgets as $budget ) {
+foreach ( $response_budget_transactions as $budget_transaction ) {
 
   // Get transactions
-  foreach ( $budget['transactions'] as $transaction ) {
+  foreach ( $budget_transaction['transactions'] as $transaction ) {
 
-    // Ignore investments
-    $ignored_accounts = [
-      'e902b887-bc20-4eed-ae82-c36a8f8505d6',
-      'e2662f83-0ddf-4275-be3c-6e90cf4006f8',
-      '8e0bcb4d-d623-4ba7-a29f-c949b4a16282',
-      'c54bf70e-62b7-4507-acdf-e07e1cab60bb',
-      '66c28b83-f66d-40c0-a771-aa06f28c633e',
-      'df28aa6c-e99c-40a3-b070-a61d2d978943',
-    ];
+		// Ignore investments
+		$ignored_accounts = [
+		'e902b887-bc20-4eed-ae82-c36a8f8505d6',
+		'e2662f83-0ddf-4275-be3c-6e90cf4006f8',
+		'8e0bcb4d-d623-4ba7-a29f-c949b4a16282',
+		'c54bf70e-62b7-4507-acdf-e07e1cab60bb',
+		'66c28b83-f66d-40c0-a771-aa06f28c633e',
+		'df28aa6c-e99c-40a3-b070-a61d2d978943',
+		];
 
-    // Sum all amounts together
-    if ( ! array_contains( $transaction['account_id'], $ignored_accounts ) && ! str_contains( $transaction['category_name'], 'Inflow' ) ) {
-      $transaction_items += $transaction['amount'];
-    }
+		// Sum all amounts together
+		if ( ! array_contains( $transaction['account_id'], $ignored_accounts ) && ! str_contains( $transaction['category_name'], 'Inflow' ) ) {
+		  $transaction_items += $transaction['amount'];
+			}
   }
 }
 
@@ -404,6 +456,10 @@ $substraction = $income - $expenses;
   </p>
 
   <a class="powered" href="https://app.youneedabudget.com/"><span>Rajapinnan tarjoaa</span><svg aria-label="YNAB" fill="none" height="29" viewBox="0 0 115 29" width="115" xmlns="http://www.w3.org/2000/svg"><path d="M18.249 17.795v10.091H9.766v-10.09L0 0h9.719l4.447 8.527C15.66 5.763 17.143 2.682 18.543 0h9.307zm26.544 10.091l-7.954-13.02v13.02h-8.036V0h7.248l7.953 12.808V0h7.99v27.886zm27.391-4.951h-8.201l-1.647 4.94h-9.06L63.489 0h9.766l9.965 27.886h-9.436zm-4.071-12.761L65.97 16.56h4.283zm27.732 17.712H84.48V0h10.79c6.388 0 10.095 2.717 10.095 7.657 0 2.47-1.283 4.493-3.377 6.01 2.188 1.235 3.541 3.705 3.541 6.222-.011 5.151-3.635 7.997-9.683 7.997zm-1.2-21.382h-2.06v4.528h2.19c1.07 0 2.023-.87 2.023-2.387-.012-1.188-.788-2.14-2.153-2.14zM94.48 16.76h-1.894v4.658h1.777c1.776 0 2.718-.87 2.718-2.27 0-1.482-.742-2.388-2.6-2.388z" fill="#fff"/><path d="M105.776 23.723c0-2.552 2.059-4.61 4.612-4.61S115 21.17 115 23.722s-2.059 4.61-4.612 4.61-4.612-2.058-4.612-4.61z" fill="#fff"/></svg></a>
+
+  <p class="last-modified">
+    <?php echo $budget_last_updated; ?>.
+  </p>
 </div>
 </div>
 </body>
