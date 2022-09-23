@@ -29,11 +29,12 @@ $dotenv->load();
   --color-neutral: #96cde4;
   --color-green: #1ccc5c;
   --color-red: #df345b;
+  --color-text: #f0f6fc;
 }
 
 body {
   background-color: #0d1117;
-  color: #f0f6fc;
+  color: var(--color-text);
   font-family: 'Inter', -apple-system, 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Oxygen-Sans', 'Ubuntu', 'Cantarell', 'Helvetica Neue', sans-serif;
 }
 
@@ -107,8 +108,9 @@ body {
 .last-modified {
   color: #666;
   font-size: 13px;
-  margin-top: 30px;
+  margin-top: -10px;
   margin-bottom: 0;
+  position: relative;
 }
 
 .powered:hover {
@@ -208,6 +210,59 @@ body {
   .label {
     font-size: 14px;
   }
+}
+
+#chart {
+  margin-top: 2rem;
+}
+
+.apexcharts-tooltip {
+  background: rgb(0 0 0 / .95) !important;
+  color: var(--color-text) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  font-size: 12px !important;
+  border-radius: 4px !important;
+  font-family: 'Inter', -apple-system, 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Oxygen-Sans', 'Ubuntu', 'Cantarell', 'Helvetica Neue', sans-serif !important;
+}
+
+.apexcharts-bar-area {
+  transition: none !important;
+}
+
+.apexcharts-backgroundBar {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  /* Hack to hide the background bar */
+  width: 1000% !important;
+  transform: translateX(-21px) !important;
+}
+
+.apexcharts-bar-area:hover {
+  fill: var(--color-red) !important;
+  box-shadow: none !important;
+}
+
+.apexcharts-tooltip-series-group {
+  padding: 0 10px 0 5px !important;
+}
+
+.apexcharts-tooltip-text-y-value {
+  font-size: 20px !important;
+  font-weight: 600 !important;
+  color: var(--color-red) !important;
+}
+
+.apexcharts-tooltip-text-y-label,
+.apexcharts-tooltip-marker {
+  display: none !important;
+}
+
+.apexcharts-tooltip-title {
+  background: #000 !important;
+  border: 0 !important;
+  margin-bottom: 0 !important;
+  padding: 8px 10px 2px 10px !important;
 }
 </style>
 <body>
@@ -318,18 +373,19 @@ function get_time_ago( $time ) {
   );
 
   foreach ( $condition as $secs => $str ) {
-    $d = $time_difference / $secs;
-    if ( $d >= 1 ) {
-      $t = round( $d );
-      if ( 'tunti' === $str && $t > 1 ) {
-        $str = 'tuntia';
-      } elseif ( 'päivä' === $str && $t > 1 ) {
-        $str = 'päivää';
-      } elseif ( 'minuutti' === $str && $t > 1 ) {
-        $str = 'minuuttia';
-      }
-      return 'Budjettia päivitetty viimeksi ' . $t . ' ' . $str . ' sitten';
-    }
+		$d = $time_difference / $secs;
+		if ( $d >= 1 ) {
+		  $t = round( $d );
+		  if ( 'tunti' === $str && $t > 1 ) {
+				$str = 'tuntia';
+		  } elseif ( 'päivä' === $str && $t > 1 ) {
+				$str = 'päivää';
+		  } elseif ( 'minuutti' === $str && $t > 1 ) {
+				$str = 'minuuttia';
+		  }
+
+		  return 'Budjettia päivitetty viimeksi ' . $t . ' ' . $str . ' sitten';
+		}
   }
 }
 
@@ -359,12 +415,12 @@ foreach ( $response_months as $month ) {
 
 		  // All money currently available
 		  $currently_available += $category['balance'] / 1000;
-			}
+		}
 
 		// Food category
 		if ( 'f6824431-03d1-4230-80de-126b66bac5d2' === $category['id'] ) {
 		  $food_money_available += $category['balance'] / 1000;
-			}
+		}
 
 		// Get underfunded
 		$underfunded += $category['goal_under_funded'];
@@ -377,7 +433,7 @@ foreach ( $response_scheduled as $scheduled ) {
   foreach ( $scheduled['scheduled_transactions'] as $scheduled_transaction ) {
 		if ( str_contains( $scheduled_transaction['category_name'], 'Inflow' ) && str_contains( $scheduled_transaction['date_next'], date( 'Y-m' ) ) ) {
 		  $income_items += $scheduled_transaction['amount'];
-			}
+		}
   }
 }
 
@@ -399,9 +455,19 @@ foreach ( $response_budget_transactions as $budget_transaction ) {
 		];
 
 		// Sum all amounts together
-		if ( ! array_contains( $transaction['account_id'], $ignored_accounts ) && ! str_contains( $transaction['category_name'], 'Inflow' ) ) {
+		if ( ! array_contains( $transaction['account_id'], $ignored_accounts ) && ! str_contains( $transaction['category_name'], 'Inflow' ) && null === $transaction['transfer_account_id'] ) {
 		  $transaction_items += $transaction['amount'];
-			}
+
+      // Show only this week's transactions
+      if ( $transaction['date'] >= date( 'Y-m-d', strtotime( '-7 day' ) ) ) {
+
+				// Create initial array
+				$week_transactions[] = array(
+				  'date' => $transaction['date'],
+				  'amount' => number_format( (float) abs( $transaction['amount'] / 1000 ), 2, '.', '' ),
+				);
+      }
+		}
   }
 }
 
@@ -456,6 +522,8 @@ $substraction = $income - $expenses;
     <span>Tässä kuussa tarvitaan vielä <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $underfunded, 2, ',', '' ); ?> &euro;</b><br></span>
   </p>
 
+  <div id="chart"></div>
+
   <p class="last-modified">
     <?php echo $budget_last_updated; ?>.
   </p>
@@ -463,5 +531,133 @@ $substraction = $income - $expenses;
   <a class="powered" href="https://app.youneedabudget.com/"><span>Rajapinnan tarjoaa</span><svg aria-label="YNAB" fill="none" height="29" viewBox="0 0 115 29" width="115" xmlns="http://www.w3.org/2000/svg"><path d="M18.249 17.795v10.091H9.766v-10.09L0 0h9.719l4.447 8.527C15.66 5.763 17.143 2.682 18.543 0h9.307zm26.544 10.091l-7.954-13.02v13.02h-8.036V0h7.248l7.953 12.808V0h7.99v27.886zm27.391-4.951h-8.201l-1.647 4.94h-9.06L63.489 0h9.766l9.965 27.886h-9.436zm-4.071-12.761L65.97 16.56h4.283zm27.732 17.712H84.48V0h10.79c6.388 0 10.095 2.717 10.095 7.657 0 2.47-1.283 4.493-3.377 6.01 2.188 1.235 3.541 3.705 3.541 6.222-.011 5.151-3.635 7.997-9.683 7.997zm-1.2-21.382h-2.06v4.528h2.19c1.07 0 2.023-.87 2.023-2.387-.012-1.188-.788-2.14-2.153-2.14zM94.48 16.76h-1.894v4.658h1.777c1.776 0 2.718-.87 2.718-2.27 0-1.482-.742-2.388-2.6-2.388z" fill="#fff"/><path d="M105.776 23.723c0-2.552 2.059-4.61 4.612-4.61S115 21.17 115 23.722s-2.059 4.61-4.612 4.61-4.612-2.058-4.612-4.61z" fill="#fff"/></svg></a>
 </div>
 </div>
+
+
+<?php
+// Create finished array for this week's transactions grouped by day
+$week_transactions_combined_by_day = array();
+
+foreach ( $week_transactions as $element ) {
+  $amount = $element['amount'];
+  $date_key = $element['date'];
+
+  if ( array_key_exists( $date_key, $week_transactions_combined_by_day ) ) {
+    $week_transactions_combined_by_day[ $date_key ]['y'] += $amount;
+  } else {
+    // Otherwise create a new element with datetimeobject as key
+    $week_transactions_combined_by_day[ $date_key ]['x'] = $date_key;
+    $week_transactions_combined_by_day[ $date_key ]['y'] = $amount;
+  }
+}
+
+$data_for_apexchart = array_values( $week_transactions_combined_by_day );
+$json_for_apexchart = trim( json_encode( $data_for_apexchart ), '[]""' );
+?>
+<script src="https://momentjs.com/downloads/moment-with-locales.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script>
+window.onload = function(){
+  moment.locale('fi');
+}
+
+var options = {
+  series: [
+    {
+      data: [
+        <?php echo $json_for_apexchart; ?>
+      ]
+    }
+  ],
+  grid: {
+    padding: {
+      left: -19,
+    },
+    show: false,
+    xaxis: {
+      lines: {
+      show: false
+    }
+   },
+  },
+  chart: {
+    background: '#0d1117',
+    height: 200,
+    width: 280,
+    type: "bar",
+    toolbar: {
+      show: false,
+      tools: {
+        download: false
+      }
+    },
+  },
+  plotOptions: {
+    bar: {
+      horizontal: false,
+      borderRadius: 2,
+      columnWidth: '50%',
+      barHeight: '70%',
+      distributed: false,
+      colors: {
+        backgroundBarColors: ["#0d1117"]
+      }
+    },
+  },
+  fill: {
+    colors: "#666",
+  },
+  dataLabels: {
+    enabled: false
+  },
+  stroke: {
+    width: 0
+  },
+  tooltip: {
+    enabled: true,
+    followCursor: false,
+    onDatasetHover: {
+      highlightDataSeries: false,
+    },
+  },
+  floating: true,
+  xaxis: {
+    labels: {
+      show: false,
+      formatter: function (val) {
+        return moment(new Date(val)).format("dddd");
+      }
+    },
+    axisTicks: {
+      show: false
+    },
+    axisBorder: {
+      show: false
+    },
+    legend: {
+      show: false
+    }
+  },
+  yaxis: {
+    labels: {
+      show: false,
+      formatter: function(val) {
+        return "-" + parseFloat(val).toFixed(2) + " €";
+      }
+    },
+    axisTicks: {
+    show: false
+    },
+    axisBorder: {
+      show: false
+    },
+    legend: {
+      show: false
+    }
+  },
+};
+
+var chart = new ApexCharts(document.querySelector("#chart"), options);
+chart.render();
+</script>
 </body>
 </html>
