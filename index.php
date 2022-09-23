@@ -338,6 +338,12 @@ $base = 'https://api.youneedabudget.com/v1/';
 $get_budgets = callAPI( 'GET', $base . '/budgets/?include_accounts=true', false );
 $response_budget = json_decode( $get_budgets, true );
 
+// If rate limited
+
+if ( str_contains( $get_budgets, 'Too many requests' ) ) {
+  echo '<div class="item"><div class="item-wrapper item-wrapper-alt"><p class="explanation" style="font-size: 16px;">Rajapinnan rajat tulivat vastaan. Yritä myöhemmin uudelleen.</p></div></div>';
+} else {
+
 // Get budget transactions
 $get_budget_transactions = callAPI( 'GET', $base . '/budgets/' . $budgetId . '/transactions?since_date=' . date( 'Y-m' ) . '-01', false );
 $response_budget_transactions = json_decode( $get_budget_transactions, true );
@@ -659,5 +665,6 @@ var options = {
 var chart = new ApexCharts(document.querySelector("#chart"), options);
 chart.render();
 </script>
+<?php } ?>
 </body>
 </html>
