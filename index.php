@@ -1,4 +1,15 @@
 <?php
+// Cache settings
+$cachefile = 'cache.html';
+$cachetime = 15 * 60;
+if ( file_exists( $cachefile ) && time() - $cachetime < filemtime( $cachefile ) ) {
+	$comment = '<!-- Amazing hand crafted super cache by rolle, generated ' . date( 'H:i', filemtime( $cachefile ) ) . ' -->';
+	include $cachefile;
+  echo $comment;
+	exit;
+}
+ob_start();
+
 // Require composer
 require __DIR__ . '/vendor/autoload.php';
 
@@ -665,6 +676,12 @@ var options = {
 var chart = new ApexCharts(document.querySelector("#chart"), options);
 chart.render();
 </script>
-<?php } ?>
+<?php }
+// Cache end
+$fp = fopen( $cachefile, 'w' );
+fwrite( $fp, ob_get_contents() );
+fclose( $fp );
+ob_end_flush();
+?>
 </body>
 </html>
