@@ -439,8 +439,10 @@ foreach ( $response_months as $month ) {
 		  $food_money_available += $category['balance'] / 1000;
 		}
 
-		// Get underfunded
-		$underfunded += $category['goal_under_funded'];
+		// Get underfunded amount
+    if ( 'NEED' === $category['goal_type'] ) {
+      $underfunded += $category['goal_under_funded'];
+    }
   }
 }
 
