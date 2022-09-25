@@ -585,6 +585,13 @@ var options = {
       ]
     }
   ],
+  states: {
+    active: {
+      filter: {
+        type: 'none'
+      }
+    }
+  },
   grid: {
     padding: {
       left: -19,
