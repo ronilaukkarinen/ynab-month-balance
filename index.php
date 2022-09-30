@@ -431,7 +431,9 @@ foreach ( $response_months as $month ) {
 		if ( ! str_contains( $category['name'], 'Inflow' ) && '85ee6c02-bcdc-471e-886a-9b9fcd7f4df7' !== $category['id'] && false === $category['hidden'] && false === $category['deleted'] ) {
 
 		  // All money currently available
-		  $currently_available += $category['balance'] / 1000;
+      if ( 'NEED' === $category['goal_type'] ) {
+		    $currently_available += $category['balance'] / 1000;
+      }
 		}
 
 		// Food category
@@ -513,7 +515,8 @@ $substraction = $income - $expenses;
         }
 
         // Print balance
-        $balance = number_format( (float) $substraction, 2, ',', '' );
+        // $balance = number_format( (float) $substraction, 2, ',', '' );
+        $balance = $currently_available;
         echo '<span class="value ' . $class . '">' . $balance . ' <span class="unit">&euro;</span></span>';
 
         // Calculate days remaining this month
@@ -524,7 +527,7 @@ $substraction = $income - $expenses;
           $days_remaining_this_month = 1;
         }
       ?>
-      <span class="sub-label <?php echo $class; ?>">Säästöön jäävä summa (tulot miinus menot)</span></span>
+      <span class="sub-label <?php echo $class; ?>">Vapaassa käytössä juuri nyt</span></span>
     </p>
   </div><br>
 
@@ -538,7 +541,6 @@ $substraction = $income - $expenses;
   <p class="explanation">
     <span>Tämän kuun tulot on <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $income, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Tämän kuun menot on <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $expenses, 2, ',', '' ); ?> &euro;</b><br></span>
-    <span>Vapaassa käytössä rahaa on juuri nyt <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $currently_available, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Ruokabudjetti loppukuulle <?php echo $days_remaining_this_month; ?> päivälle <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $food_money_available, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Rahaa käytetty tähän mennessä <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $transactions, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Tuloista kulujen jälkeen jää vielä <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $income - $transactions, 2, ',', '' ); ?> &euro;</b><br></span>
