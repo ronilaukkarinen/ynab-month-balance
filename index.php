@@ -540,7 +540,7 @@ $substraction = ( $income - $expenses ) - $available;
   <p class="explanation">
     <span>Tämän kuun tulot on <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $income, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Tämän kuun menot on <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $expenses, 2, ',', '' ); ?> &euro;</b><br></span>
-    <span>Vapaassa käytössä rahaa on juuri nyt <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $currently_available, 2, ',', '' ); ?> &euro;</b><br></span>
+    <span>Vapaassa käytössä rahaa on juuri nyt <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $currently_available - $available, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Ruokabudjetti loppukuulle <?php echo $days_remaining_this_month; ?> päivälle <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $food_money_available, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Rahaa käytetty tähän mennessä <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $transactions, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Tuloista kulujen jälkeen jää vielä <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $income - $transactions, 2, ',', '' ); ?> &euro;</b><br></span>
