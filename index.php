@@ -1,7 +1,7 @@
 <?php
 // Cache settings
 $cachefile = 'cache.html';
-$cachetime = 15 * 60;
+$cachetime = 1 * 60;
 if ( file_exists( $cachefile ) && time() - $cachetime < filemtime( $cachefile ) ) {
 	$comment = '<!-- Amazing hand crafted super cache by rolle, generated ' . date( 'H:i', filemtime( $cachefile ) ) . ' -->';
 	include $cachefile;
