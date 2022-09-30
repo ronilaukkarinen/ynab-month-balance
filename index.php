@@ -374,7 +374,6 @@ $budgeted_income = 0;
 $currently_available = 0;
 $goal_target = 0;
 $goal_overall_funded = 0;
-$available = 0;
 
 // Time since function
 function get_time_ago( $time ) {
@@ -442,7 +441,6 @@ foreach ( $response_months as $month ) {
 
 		// Get underfunded amount
     if ( 'NEED' === $category['goal_type'] ) {
-		  $available += $category['balance'] / 1000;
       $underfunded += $category['goal_under_funded'];
     }
   }
@@ -499,7 +497,7 @@ $income = abs( $income_items / 1000 ) + $budgeted_income;
 $expenses = $transactions + $underfunded;
 
 // Calculate
-$substraction = ( $income - $expenses ) - $available;
+$substraction = $income - $expenses;
 ?>
 
 <div class="item">
@@ -540,7 +538,7 @@ $substraction = ( $income - $expenses ) - $available;
   <p class="explanation">
     <span>Tämän kuun tulot on <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $income, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Tämän kuun menot on <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $expenses, 2, ',', '' ); ?> &euro;</b><br></span>
-    <span>Vapaassa käytössä rahaa on juuri nyt <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $currently_available - $available, 2, ',', '' ); ?> &euro;</b><br></span>
+    <span>Vapaassa käytössä rahaa on juuri nyt <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $currently_available, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Ruokabudjetti loppukuulle <?php echo $days_remaining_this_month; ?> päivälle <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $food_money_available, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Rahaa käytetty tähän mennessä <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $transactions, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Tuloista kulujen jälkeen jää vielä <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $income - $transactions, 2, ',', '' ); ?> &euro;</b><br></span>
