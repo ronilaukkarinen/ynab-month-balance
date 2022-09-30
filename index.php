@@ -374,6 +374,7 @@ $budgeted_income = 0;
 $currently_available = 0;
 $goal_target = 0;
 $goal_overall_funded = 0;
+$available = 0;
 
 // Time since function
 function get_time_ago( $time ) {
@@ -441,6 +442,7 @@ foreach ( $response_months as $month ) {
 
 		// Get underfunded amount
     if ( 'NEED' === $category['goal_type'] ) {
+		  $available += $category['balance'] / 1000;
       $underfunded += $category['goal_under_funded'];
     }
   }
@@ -497,7 +499,7 @@ $income = abs( $income_items / 1000 ) + $budgeted_income;
 $expenses = $transactions + $underfunded;
 
 // Calculate
-$substraction = $income - $expenses;
+$substraction = ( $income - $expenses ) - $available;
 ?>
 
 <div class="item">
