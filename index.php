@@ -519,6 +519,10 @@ $substraction = $income - $expenses;
         // Calculate days remaining this month
         $timestamp = strtotime( 'now' );
         $days_remaining_this_month = (int) date( 't', $timestamp ) - (int) date( 'j', $timestamp );
+
+        if ( $days_remaining_this_month === 0 ) {
+          $days_remaining_this_month = 1;
+        }
       ?>
       <span class="sub-label <?php echo $class; ?>">Säästöön jäävä summa (tulot miinus menot)</span></span>
     </p>
