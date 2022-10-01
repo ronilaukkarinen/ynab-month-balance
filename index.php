@@ -515,8 +515,7 @@ $substraction = $income - $expenses;
         }
 
         // Print balance
-        // $balance = number_format( (float) $substraction, 2, ',', '' );
-        $balance = $currently_available;
+        $balance = number_format( (float) $substraction, 2, ',', '' );
         echo '<span class="value ' . $class . '">' . $balance . ' <span class="unit">&euro;</span></span>';
 
         // Calculate days remaining this month
@@ -527,7 +526,7 @@ $substraction = $income - $expenses;
           $days_remaining_this_month = 1;
         }
       ?>
-      <span class="sub-label <?php echo $class; ?>">Vapaassa käytössä juuri nyt</span></span>
+      <span class="sub-label <?php echo $class; ?>">Säästöön jäävä summa (tulot miinus menot)</span></span>
     </p>
   </div><br>
 
@@ -541,6 +540,8 @@ $substraction = $income - $expenses;
   <p class="explanation">
     <span>Tämän kuun tulot on <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $income, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Tämän kuun menot on <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $expenses, 2, ',', '' ); ?> &euro;</b><br></span>
+    <span>Budjetoituna käyttöön <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $currently_available, 2, ',', '' ); ?> &euro;</b><br></span>
+    <span>Budjetoimatta (tulevaa rahaa) <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $income - $currently_available, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Ruokabudjetti loppukuulle <?php echo $days_remaining_this_month; ?> päivälle <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $food_money_available, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Rahaa käytetty tähän mennessä <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $transactions, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Tuloista kulujen jälkeen jää vielä <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $income - $transactions, 2, ',', '' ); ?> &euro;</b><br></span>
