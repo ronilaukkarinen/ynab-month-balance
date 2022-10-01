@@ -526,7 +526,7 @@ $substraction = $income - $expenses;
           $days_remaining_this_month = 1;
         }
       ?>
-      <span class="sub-label <?php echo $class; ?>">Säästöön jäävä summa (tulot miinus menot)</span></span>
+      <span class="sub-label <?php echo $class; ?>">Säästöön jäävä summa juuri nyt (tulot miinus menot)</span></span>
     </p>
   </div><br>
 
