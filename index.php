@@ -499,7 +499,7 @@ $income = abs( $income_items / 1000 ) + $budgeted_income;
 $expenses = $transactions + $underfunded;
 
 // Calculate
-$substraction = $income - $expenses;
+$substraction = $income - ( $expenses + $currently_available );
 ?>
 
 <div class="item">
@@ -526,7 +526,7 @@ $substraction = $income - $expenses;
           $days_remaining_this_month = 1;
         }
       ?>
-      <span class="sub-label <?php echo $class; ?>">Säästöön jäävä summa juuri nyt (tulot miinus menot)</span></span>
+      <span class="sub-label <?php echo $class; ?>">Säästöön jäävä summa (tulot miinus menot + budjetoidut menot)</span></span>
     </p>
   </div><br>
 
@@ -539,8 +539,9 @@ $substraction = $income - $expenses;
 
   <p class="explanation">
     <span>Tämän kuun tulot on <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $income, 2, ',', '' ); ?> &euro;</b><br></span>
-    <span>Tämän kuun menot on <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $expenses, 2, ',', '' ); ?> &euro;</b><br></span>
-    <span>Budjetoituna käyttöön <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $currently_available, 2, ',', '' ); ?> &euro;</b><br></span>
+    <span>Tämän kuun menot tähän mennessä <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $expenses, 2, ',', '' ); ?> &euro;</b><br></span>
+    <span>Tämän kuun budjetoidut menot <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $currently_available, 2, ',', '' ); ?> &euro;</b><br></span>
+    <span>Menot + budjetoidut menot yhteensä <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $expenses + $currently_available, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Budjetoimatta (tulevaa rahaa) <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $income - $currently_available, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Ruokabudjetti loppukuulle <?php echo $days_remaining_this_month; ?> päivälle <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $food_money_available, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Rahaa käytetty tähän mennessä <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $transactions, 2, ',', '' ); ?> &euro;</b><br></span>
