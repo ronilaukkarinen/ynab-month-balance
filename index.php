@@ -359,6 +359,10 @@ if ( str_contains( $get_budgets, 'Too many requests' ) ) {
 $get_budget_transactions = callAPI( 'GET', $base . '/budgets/' . $budgetId . '/transactions?since_date=' . date( 'Y-m' ) . '-01', false );
 $response_budget_transactions = json_decode( $get_budget_transactions, true );
 
+// Get budget transactions for week graph
+$get_budget_transactions_for_week_graph = callAPI( 'GET', $base . '/budgets/' . $budgetId . '/transactions?since_date=' . date( 'Y-m-d', strtotime( '-7 day' ) ), false );
+$response_budget_transactions_for_week_graph = json_decode( $get_budget_transactions_for_week_graph, true );
+
 // Get scheduled transactions
 $get_scheduled = callAPI( 'GET', $base . '/budgets/' . $budgetId . '/scheduled_transactions?since_date=' . date( 'Y-m' ) . '-01', false );
 $response_scheduled = json_decode( $get_scheduled, true );
@@ -478,14 +482,35 @@ foreach ( $response_budget_transactions as $budget_transaction ) {
 		// Sum all amounts together
 		if ( ! array_contains( $transaction['account_id'], $ignored_accounts ) && ! str_contains( $transaction['category_name'], 'Inflow' ) && null === $transaction['transfer_account_id'] ) {
 		  $transaction_items += $transaction['amount'];
+		}
+  }
+}
+
+foreach ( $response_budget_transactions_for_week_graph as $budget_transaction_for_week_graph ) {
+
+  // Get transactions
+  foreach ( $budget_transaction_for_week_graph['transactions'] as $transaction_for_week_graph ) {
+
+		// Ignore investments
+		$ignored_accounts = [
+		'e902b887-bc20-4eed-ae82-c36a8f8505d6',
+		'e2662f83-0ddf-4275-be3c-6e90cf4006f8',
+		'8e0bcb4d-d623-4ba7-a29f-c949b4a16282',
+		'c54bf70e-62b7-4507-acdf-e07e1cab60bb',
+		'66c28b83-f66d-40c0-a771-aa06f28c633e',
+		'df28aa6c-e99c-40a3-b070-a61d2d978943',
+		];
+
+		// Sum all amounts together
+		if ( ! array_contains( $transaction_for_week_graph['account_id'], $ignored_accounts ) && ! str_contains( $transaction_for_week_graph['category_name'], 'Inflow' ) && null === $transaction_for_week_graph['transfer_account_id'] ) {
 
       // Show only this week's transactions
-      if ( $transaction['date'] >= date( 'Y-m-d', strtotime( '-7 day' ) ) ) {
+      if ( $transaction_for_week_graph['date'] >= date( 'Y-m-d', strtotime( '-7 day' ) ) ) {
 
 				// Create initial array
 				$week_transactions[] = array(
-				  'date' => $transaction['date'],
-				  'amount' => number_format( (float) abs( $transaction['amount'] / 1000 ), 2, '.', '' ),
+				  'date' => $transaction_for_week_graph['date'],
+				  'amount' => number_format( (float) abs( $transaction_for_week_graph['amount'] / 1000 ), 2, '.', '' ),
 				);
       }
 		}
@@ -539,12 +564,12 @@ $substraction = $income - ( $expenses + $currently_available );
 
   <p class="explanation">
     <span>Tämän kuun tulot on <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $income, 2, ',', '' ); ?> &euro;</b><br></span>
-    <span>Tämän kuun menot tähän mennessä <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $expenses, 2, ',', '' ); ?> &euro;</b><br></span>
-    <span>Tämän kuun budjetoidut menot <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $currently_available, 2, ',', '' ); ?> &euro;</b><br></span>
-    <span>Menot + budjetoidut menot yhteensä <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $expenses + $currently_available, 2, ',', '' ); ?> &euro;</b><br></span>
+    <span>Rahaa käytetty tässä kuussa <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $transactions, 2, ',', '' ); ?> &euro;</b><br></span>
+    <!-- <span>Tämän kuun menot tähän mennessä <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $expenses, 2, ',', '' ); ?> &euro;</b><br></span> -->
+    <span>Koko kuun arvioidut menot <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $expenses + $currently_available, 2, ',', '' ); ?> &euro;</b><br></span>
+    <span>Tämän kuun budjetoidut menot <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $currently_available, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Budjetoimatta (tulevaa rahaa) <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $income - $currently_available, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Ruokabudjetti loppukuulle <?php echo $days_remaining_this_month; ?> päivälle <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $food_money_available, 2, ',', '' ); ?> &euro;</b><br></span>
-    <span>Rahaa käytetty tähän mennessä <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $transactions, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Tuloista kulujen jälkeen jää vielä <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $income - $transactions, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Tässä kuussa tarvitaan vielä <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $underfunded, 2, ',', '' ); ?> &euro;</b><br></span>
   </p>
@@ -604,7 +629,7 @@ var options = {
   },
   grid: {
     padding: {
-      left: -19,
+      left: -17,
     },
     show: false,
     xaxis: {
@@ -629,7 +654,7 @@ var options = {
     bar: {
       horizontal: false,
       borderRadius: 2,
-      columnWidth: '50%',
+      columnWidth: '40%',
       barHeight: '70%',
       distributed: false,
       colors: {
@@ -658,7 +683,7 @@ var options = {
     labels: {
       show: false,
       formatter: function (val) {
-        return moment(new Date(val)).format("dddd");
+        return moment(new Date(val)).format("dddd l");
       }
     },
     axisTicks: {
