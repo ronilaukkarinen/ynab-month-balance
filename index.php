@@ -349,8 +349,11 @@ $base = 'https://api.youneedabudget.com/v1/';
 $get_budgets = callAPI( 'GET', $base . '/budgets/?include_accounts=true', false );
 $response_budget = json_decode( $get_budgets, true );
 
-// If rate limited
+// Get accounts
+$get_accounts = callAPI( 'GET', $base . '/budgets/' . $budgetId . '/accounts', false );
+$response_accounts = json_decode( $get_accounts, true );
 
+// If rate limited
 if ( str_contains( $get_budgets, 'Too many requests' ) ) {
   echo '<div class="item"><div class="item-wrapper item-wrapper-alt"><p class="explanation" style="font-size: 16px;">Rajapinnan rajat tulivat vastaan. Yritä myöhemmin uudelleen.</p></div></div>';
 } else {
@@ -418,6 +421,27 @@ foreach ( $response_budget as $budgets ) {
 		  if ( '24d3a66a-0a98-4677-8875-c6d12986480a' === $budget['id'] ) {
 				$last_modified_time = strtotime( $budget['last_modified_on'] );
 				$budget_last_updated = get_time_ago( $last_modified_time );
+		  }
+		}
+  }
+}
+
+// Get account info
+$account_balance_without_savings = 0;
+foreach ( $response_accounts as $accounts ) {
+  foreach ( $accounts as $accountlist ) {
+    foreach ( $accountlist as $account ) {
+      // All accounts that are not savings
+		  if ( 
+        '6da3bf99-84c8-4db4-bae1-667e8db42976' === $account['id'] ||
+        '6b31b842-9bf0-45ce-b8e6-dedda4aa2b37' === $account['id'] ||
+        '1753dd01-eeae-48de-b44d-efafe3acf465' === $account['id'] ||
+        'f456839b-704a-4546-a439-06d5c610579f' === $account['id'] ||
+        'a9489031-a9d1-428a-b024-609cee3b8f02' === $account['id'] ||
+        '14c8f018-7249-4121-b15e-38dda043774a' === $account['id'] ||
+        false === $budget['closed']
+        ) {          
+		    $account_balance_without_savings += $account['balance'] / 1000;
 		  }
 		}
   }
@@ -528,45 +552,50 @@ $substraction = $income - ( $expenses + $currently_available );
 ?>
 
 <div class="item">
-  <div class="item-wrapper item-wrapper-alt">
-    <p>
-      <?php
-        if ( $substraction > 0 ) {
-          $class = 'green';
-          $substraction = '+' . abs( $substraction );
-        } else {
-          $class = 'red';
-          $substraction = $substraction;
-        }
+  <div class="items">
 
-        // Print balance
-        $balance = number_format( (float) $substraction, 2, ',', '' );
-        echo '<span class="value ' . $class . '">' . $balance . ' <span class="unit">&euro;</span></span>';
+    <div class="item-wrapper item-wrapper-alt">
+      <p>
+        <?php
+          if ( $substraction > 0 ) {
+            $class = 'green';
+            $substraction = '+' . abs( $substraction );
+          } else {
+            $class = 'red';
+            $substraction = $substraction;
+          }
 
-        // Calculate days remaining this month
-        $timestamp = strtotime( 'now' );
-        $days_remaining_this_month = (int) date( 't', $timestamp ) - (int) date( 'j', $timestamp );
+          // Print balance
+          $balance = number_format( (float) $substraction, 2, ',', '' );
+          echo '<span class="value ' . $class . '">' . $balance . ' <span class="unit">&euro;</span></span>';
 
-        if ( $days_remaining_this_month === 0 ) {
-          $days_remaining_this_month = 1;
-        }
-      ?>
-      <span class="sub-label <?php echo $class; ?>">Kuukauden tulot miinus menot</span></span>
-    </p>
-  </div><br>
+          // Calculate days remaining this month
+          $timestamp = strtotime( 'now' );
+          $days_remaining_this_month = (int) date( 't', $timestamp ) - (int) date( 'j', $timestamp );
 
-  <div class="item-wrapper item-wrapper-alt">
-    <p>
-      <span class="value green"><?php echo number_format( (float) $food_money_available / $days_remaining_this_month, 2, ',', '' ); ?> <span class="unit">&euro;</span></span><br />
-      <span class="sub-label green">Reaaliaikainen päiväbudjetti ruokaan</span></span>
-    </p>
+          if ( $days_remaining_this_month === 0 ) {
+            $days_remaining_this_month = 1;
+          }
+        ?>
+        <span class="sub-label <?php echo $class; ?>">Kuukauden tulot miinus menot</span></span>
+      </p>
+    </div><br>
+
+    <div class="item-wrapper item-wrapper-alt">
+      <p>
+        <span class="value green"><?php echo number_format( (float) $food_money_available / $days_remaining_this_month, 2, ',', '' ); ?> <span class="unit">&euro;</span></span><br />
+        <span class="sub-label green">Reaaliaikainen päiväbudjetti ruokaan</span></span>
+      </p>
+    </div>
+
   </div>
 
   <p class="explanation">
+    <span>Rahaa tilillä nyt <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $account_balance_without_savings, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Tämän kuun tulot on <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $income, 2, ',', '' ); ?> &euro;</b><br></span>
-    <span>Rahaa käytetty tässä kuussa <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $transactions, 2, ',', '' ); ?> &euro;</b><br></span>
     <!-- <span>Tämän kuun menot tähän mennessä <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $expenses, 2, ',', '' ); ?> &euro;</b><br></span> -->
     <span>Koko kuun arvioidut menot <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $expenses + $currently_available, 2, ',', '' ); ?> &euro;</b><br></span>
+    <span>Rahaa käytetty tässä kuussa <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $transactions, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Tämän kuun budjetoidut menot <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $currently_available, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Budjetoimatta (tulevaa rahaa) <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $income - $currently_available, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Ruokabudjetti loppukuulle <?php echo $days_remaining_this_month; ?> päivälle <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $food_money_available, 2, ',', '' ); ?> &euro;</b><br></span>
