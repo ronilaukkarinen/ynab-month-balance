@@ -432,15 +432,16 @@ foreach ( $response_accounts as $accounts ) {
   foreach ( $accounts as $accountlist ) {
     foreach ( $accountlist as $account ) {
       // All accounts that are not savings
-		  if ( 
-        '6da3bf99-84c8-4db4-bae1-667e8db42976' === $account['id'] ||
+		  if (
+        ( '6da3bf99-84c8-4db4-bae1-667e8db42976' === $account['id'] ||
         '6b31b842-9bf0-45ce-b8e6-dedda4aa2b37' === $account['id'] ||
         '1753dd01-eeae-48de-b44d-efafe3acf465' === $account['id'] ||
         'f456839b-704a-4546-a439-06d5c610579f' === $account['id'] ||
         'a9489031-a9d1-428a-b024-609cee3b8f02' === $account['id'] ||
         '14c8f018-7249-4121-b15e-38dda043774a' === $account['id'] ||
-        false === $budget['closed']
-        ) {          
+        false === $budget['closed'] ) &&
+        'c2b180e2-fd7f-49a5-9087-5e938dd11f02' !== $account['id']
+        ) {
 		    $account_balance_without_savings += $account['balance'] / 1000;
 		  }
 		}
