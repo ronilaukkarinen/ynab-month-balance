@@ -459,9 +459,12 @@ foreach ( $response_months as $month ) {
 		// If is not ASP, income deleted or hidden
 		if ( ! str_contains( $category['name'], 'Inflow' ) && '85ee6c02-bcdc-471e-886a-9b9fcd7f4df7' !== $category['id'] && false === $category['hidden'] && false === $category['deleted'] ) {
 
-		  // All money currently available
       if ( 'NEED' === $category['goal_type'] ) {
+        // All money currently available
 		    $need_goal_balance += $category['balance'] / 1000;
+
+        // Get underfunded amount
+        $underfunded += $category['goal_under_funded'];
       }
 		}
 
@@ -469,11 +472,6 @@ foreach ( $response_months as $month ) {
 		if ( 'f6824431-03d1-4230-80de-126b66bac5d2' === $category['id'] ) {
 		  $food_money_available += $category['balance'] / 1000;
 		}
-
-		// Get underfunded amount
-    if ( 'NEED' === $category['goal_type'] ) {
-      $underfunded += $category['goal_under_funded'];
-    }
   }
 }
 
@@ -546,10 +544,10 @@ foreach ( $response_budget_transactions_for_week_graph as $budget_transaction_fo
 $underfunded = $underfunded / 1000;
 $transactions = abs( $transaction_items / 1000 );
 $income = abs( $income_items / 1000 ) + $budgeted_income;
-$expenses = $transactions + $underfunded;
+$expenses = $transactions + $underfunded + $underfunded;
 
 // Calculate
-$substraction = $income - ( $expenses + $need_goal_balance );
+$substraction = $income - $expenses;
 ?>
 
 <div class="item">
@@ -594,13 +592,12 @@ $substraction = $income - ( $expenses + $need_goal_balance );
   <p class="explanation">
     <span>Rahaa tilillä nyt <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $account_balance_without_savings, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Tämän kuun tulot on <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $income, 2, ',', '' ); ?> &euro;</b><br></span>
-    <span>Koko kuun menot <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $expenses + $need_goal_balance, 2, ',', '' ); ?> &euro;</b><br></span>
-    <span>Tämän kuun menot tähän mennessä <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $expenses, 2, ',', '' ); ?> &euro;</b><br></span>
+    <span>Koko kuun menot, menneet ja tulevat <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $expenses, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Rahaa käytetty tässä kuussa <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $transactions, 2, ',', '' ); ?> &euro;</b><br></span>
-    <span>Tämän kuun budjetoidut menot <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $need_goal_balance, 2, ',', '' ); ?> &euro;</b><br></span>
+    <span>Loppukuun budjetoidut menot <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $need_goal_balance, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Ruokabudjetti loppukuulle <?php echo $days_remaining_this_month; ?> päivälle <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $food_money_available, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Tuloista kulujen jälkeen jää vielä <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $income - $transactions, 2, ',', '' ); ?> &euro;</b><br></span>
-    <span>Tässä kuussa tarvitaan vielä <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $underfunded, 2, ',', '' ); ?> &euro;</b><br></span>
+    <span>Loppukuussa tarvitaan vielä <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $underfunded, 2, ',', '' ); ?> &euro;</b><br></span>
   </p>
 
   <div id="chart"></div>
