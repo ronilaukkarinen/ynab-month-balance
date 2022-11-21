@@ -147,7 +147,6 @@ body {
   margin-top: 20px;
   max-width: 275px;
   width: 100%;
-  display: none;
 }
 
 .progress-bar-expenses {
@@ -160,7 +159,6 @@ body {
   color: #fff;
   font-weight: 600;
   display: inline-block;
-  display: none;
   font-size: 13px;
   margin-right: 10px;
 }
@@ -168,7 +166,6 @@ body {
 .progress-bar-label {
   color: #fff;
   display: inline-block;
-  display: none;
   font-size: 10px;
   opacity: .5;
 }
@@ -544,7 +541,7 @@ foreach ( $response_budget_transactions_for_week_graph as $budget_transaction_fo
 $underfunded = $underfunded / 1000;
 $transactions = abs( $transaction_items / 1000 );
 $income = abs( $income_items / 1000 ) + $budgeted_income;
-$expenses = $transactions + $underfunded + $underfunded;
+$expenses = $transactions + $underfunded;
 
 // Calculate
 $substraction = $income - $expenses;
@@ -576,9 +573,16 @@ $substraction = $income - $expenses;
             $days_remaining_this_month = 1;
           }
         ?>
-        <span class="sub-label <?php echo $class; ?>">Kuukauden tulot miinus menot</span></span>
+        <span class="sub-label <?php echo $class; ?>">Kuukauden tulot (<?php echo number_format( (float) $income, 2, ',', '' ); ?> &euro;) miinus menot (<?php echo number_format( (float) $expenses, 2, ',', '' ); ?> &euro;)</span>
       </p>
     </div><br>
+
+    <div class="progress-bar" style="display: none;">
+      <div class="progress-bar-expenses" style="width: <?php echo round( ( $transactions / $income ) * 100, 0 ); ?>%">
+        <span class="progress-bar-value"><?php echo round( $transactions, 0 ); ?> &euro; / <?php echo round( $income, 0 ); ?> &euro;</span>
+        <span class="progress-bar-label">Menot / Tulot</span>
+      </div>
+    </div>
 
     <div class="item-wrapper item-wrapper-alt">
       <p>
