@@ -541,7 +541,7 @@ foreach ( $response_budget_transactions_for_week_graph as $budget_transaction_fo
 $underfunded = $underfunded / 1000;
 $transactions = abs( $transaction_items / 1000 );
 $income = abs( $income_items / 1000 ) + $budgeted_income;
-$expenses = $transactions + $underfunded;
+$expenses = $transactions + $underfunded + $need_goal_balance;
 
 // Calculate
 $substraction = $income - $expenses;
@@ -596,11 +596,11 @@ $substraction = $income - $expenses;
   <p class="explanation">
     <span>Rahaa tilillä nyt <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $account_balance_without_savings, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Tämän kuun tulot on <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $income, 2, ',', '' ); ?> &euro;</b><br></span>
+    <span>Ruokabudjetti loppukuulle <?php echo $days_remaining_this_month; ?> päivälle <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $food_money_available, 2, ',', '' ); ?> &euro;</b><br></span>
+    <span>Tuloista kulujen jälkeen jää vielä <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $income - $transactions, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Koko kuun menot, menneet ja tulevat <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $expenses, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Rahaa käytetty tässä kuussa <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $transactions, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Loppukuun budjetoidut menot <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $need_goal_balance, 2, ',', '' ); ?> &euro;</b><br></span>
-    <span>Ruokabudjetti loppukuulle <?php echo $days_remaining_this_month; ?> päivälle <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $food_money_available, 2, ',', '' ); ?> &euro;</b><br></span>
-    <span>Tuloista kulujen jälkeen jää vielä <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $income - $transactions, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Loppukuussa tarvitaan vielä <b style="font-weight: 500;" class="neutral"><?php echo number_format( (float) $underfunded, 2, ',', '' ); ?> &euro;</b><br></span>
   </p>
 
