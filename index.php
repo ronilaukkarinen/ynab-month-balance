@@ -527,11 +527,21 @@ foreach ( $response_budget_transactions_for_week_graph as $budget_transaction_fo
       // Show only this week's transactions
       if ( $transaction_for_week_graph['date'] >= date( 'Y-m-d', strtotime( '-7 day' ) ) ) {
 
-				// Create initial array
-				$week_transactions[] = array(
-				  'date' => $transaction_for_week_graph['date'],
-				  'amount' => number_format( (float) abs( $transaction_for_week_graph['amount'] / 1000 ), 2, '.', '' ),
-				);
+        // Show only food category
+        if ( 'f6824431-03d1-4230-80de-126b66bac5d2' === $transaction_for_week_graph['category_id'] ) {
+
+          // Create initial array
+          $week_food_transactions[] = array(
+            'date' => $transaction_for_week_graph['date'],
+            'amount' => number_format( (float) abs( $transaction_for_week_graph['amount'] / 1000 ), 2, '.', '' ),
+          );
+        } else {
+          // Create initial array
+          $week_transactions[] = array(
+            'date' => $transaction_for_week_graph['date'],
+            'amount' => number_format( (float) abs( $transaction_for_week_graph['amount'] / 1000 ), 2, '.', '' ),
+          );
+        }
       }
 		}
   }
@@ -550,7 +560,7 @@ $substraction = $income - $expenses;
 <div class="item">
   <div class="items">
 
-    <div class="item-wrapper item-wrapper-alt">
+    <div class="item-wrapper item-wrapper-alt" style="display: none;">
       <p>
         <?php
           if ( $substraction > 0 ) {
@@ -575,7 +585,8 @@ $substraction = $income - $expenses;
         ?>
         <span class="sub-label <?php echo $class; ?>">Kuukauden tulot (<?php echo number_format( (float) $income, 2, ',', '' ); ?> &euro;) miinus menot (<?php echo number_format( (float) $expenses, 2, ',', '' ); ?> &euro;)</span>
       </p>
-    </div><br>
+      <br>
+    </div>
 
     <div class="progress-bar" style="display: none;">
       <div class="progress-bar-expenses" style="width: <?php echo round( ( $transactions / $income ) * 100, 0 ); ?>%">
@@ -584,7 +595,7 @@ $substraction = $income - $expenses;
       </div>
     </div>
 
-    <div class="item-wrapper item-wrapper-alt">
+    <div class="item-wrapper item-wrapper-alt" style="margin-top: 0;">
       <p>
         <span class="value green"><?php echo number_format( (float) $food_money_available / $days_remaining_this_month, 2, ',', '' ); ?> <span class="unit">&euro;</span></span><br />
         <span class="sub-label green">Reaaliaikainen päiväbudjetti ruokaan</span></span>
@@ -593,7 +604,7 @@ $substraction = $income - $expenses;
 
   </div>
 
-  <p class="explanation">
+  <p class="explanation" style="display: none;">
     <span>Rahaa tilillä nyt <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $account_balance_without_savings, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Tämän kuun tulot on <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $income, 2, ',', '' ); ?> &euro;</b><br></span>
     <span>Ruokabudjetti loppukuulle <?php echo $days_remaining_this_month; ?> päivälle <b style="font-weight: 500;" class="green"><?php echo number_format( (float) $food_money_available, 2, ',', '' ); ?> &euro;</b><br></span>
@@ -619,7 +630,7 @@ $substraction = $income - $expenses;
 // Create finished array for this week's transactions grouped by day
 $week_transactions_combined_by_day = array();
 
-foreach ( $week_transactions as $element ) {
+foreach ( $week_food_transactions as $element ) {
   $amount = $element['amount'];
   $date_key = $element['date'];
 
