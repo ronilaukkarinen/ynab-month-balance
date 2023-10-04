@@ -555,6 +555,19 @@ $expenses = $transactions + $underfunded + $need_goal_balance;
 
 // Calculate
 $substraction = $income - $expenses;
+
+// Get amount you can spend today
+$timestamp = strtotime( 'now' );
+$days_remaining_this_month = (int) date( 't', $timestamp ) - (int) date( 'j', $timestamp );
+
+if ( $days_remaining_this_month === 0 ) {
+  $days_remaining_this_month = 1;
+}
+
+$monthly_spendable_amount = $account_balance_without_savings / $days_remaining_this_month;
+
+// Change commas to dots
+$monthly_spendable_amount = str_replace( ',', '.', $monthly_spendable_amount );
 ?>
 
 <div class="item">
@@ -597,8 +610,8 @@ $substraction = $income - $expenses;
 
     <div class="item-wrapper item-wrapper-alt" style="margin-top: 0;">
       <p>
-        <span class="value green"><?php echo number_format( (float) $food_money_available / $days_remaining_this_month, 2, ',', '' ); ?> <span class="unit">&euro;</span></span><br />
-        <span class="sub-label green">Reaaliaikainen päiväbudjetti ruokaan</span></span>
+        <span class="value green"><?php echo number_format( (float) $monthly_spendable_amount, 2, ',', '' ); ?> <span class="unit">&euro;</span></span><br />
+        <span class="sub-label green">Yhteensä käytettävissä tänään</span></span>
       </p>
     </div>
 
@@ -630,7 +643,7 @@ $substraction = $income - $expenses;
 // Create finished array for this week's transactions grouped by day
 $week_transactions_combined_by_day = array();
 
-foreach ( $week_food_transactions as $element ) {
+foreach ( $week_transactions as $element ) {
   $amount = $element['amount'];
   $date_key = $element['date'];
 
@@ -693,6 +706,9 @@ var options = {
   },
   plotOptions: {
     bar: {
+      dataLabels: {
+        position: 'top'
+      },
       horizontal: false,
       borderRadius: 2,
       columnWidth: '40%',
@@ -707,7 +723,16 @@ var options = {
     colors: "#666",
   },
   dataLabels: {
-    enabled: false
+    colors: ['#fff'],
+    position: 'bottom',
+    enabled: true,
+    formatter: function(val) {
+      return "-" + parseFloat(val).toFixed(2) + " €";
+    },
+    style: {
+      fontSize: '11px',
+      fontWeight: 'regular',
+    },
   },
   stroke: {
     width: 0
