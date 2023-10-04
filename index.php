@@ -722,6 +722,18 @@ var options = {
   fill: {
     colors: "#666",
   },
+  dataLabels: {
+    enabled: false,
+    colors: ['#fff'],
+    position: 'bottom',
+    formatter: function(val) {
+      return "-" + parseFloat(val).toFixed(2) + " €";
+    },
+    style: {
+      fontSize: '11px',
+      fontWeight: 'regular',
+    },
+  },
   stroke: {
     width: 0
   },
