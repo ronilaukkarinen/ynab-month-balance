@@ -180,12 +180,12 @@ body {
 
 .item-wrapper-alt {
   border-radius: 10px;
+  gap: 1rem;
   padding: 0;
   margin: 15px 0;
   width: auto;
   display: inline-flex;
   flex-wrap: wrap;
-  max-width: 300px;
 }
 
 .item-wrapper-alt:first-of-type {
@@ -530,6 +530,26 @@ foreach ( $response_budget_transactions_for_week_graph as $budget_transaction_fo
 		// Sum all amounts together
 		if ( ! array_contains( $transaction_for_week_graph['account_id'], $ignored_accounts ) && ! str_contains( $transaction_for_week_graph['category_name'], 'Inflow' ) && null === $transaction_for_week_graph['transfer_account_id'] ) {
 
+      // Show only this week's transactions
+      if ( $transaction_for_week_graph['date'] >= date( 'Y-m-d', strtotime( '-7 day' ) ) ) {
+
+        // Show only food category
+        if ( 'f6824431-03d1-4230-80de-126b66bac5d2' === $transaction_for_week_graph['category_id'] ) {
+
+          // Create initial array
+          $week_food_transactions[] = array(
+            'date' => $transaction_for_week_graph['date'],
+            'amount' => number_format( (float) abs( $transaction_for_week_graph['amount'] / 1000 ), 2, '.', '' ),
+          );
+        } else {
+          // Create initial array
+          $week_transactions[] = array(
+            'date' => $transaction_for_week_graph['date'],
+            'amount' => number_format( (float) abs( $transaction_for_week_graph['amount'] / 1000 ), 2, '.', '' ),
+          );
+        }
+      }
+
       // Get restaurant category e571f4e0-317f-4cf2-bc9c-2f152629bdd7
       if ( 'e571f4e0-317f-4cf2-bc9c-2f152629bdd7' === $transaction_for_week_graph['category_id'] ) {
 
@@ -549,22 +569,6 @@ foreach ( $response_budget_transactions_for_week_graph as $budget_transaction_fo
 
           // Sum all amounts together
           $food_money_spent_this_month += number_format( (float) abs( $transaction_for_week_graph['amount'] / 1000 ), 2, '.', '' );
-        }
-
-        // Show only this week's transactions
-        if ( $transaction_for_week_graph['date'] >= date( 'Y-m-d', strtotime( '-7 day' ) ) ) {
-
-          // Create initial array
-          $week_food_transactions[] = array(
-            'date' => $transaction_for_week_graph['date'],
-            'amount' => number_format( (float) abs( $transaction_for_week_graph['amount'] / 1000 ), 2, '.', '' ),
-          );
-        } else {
-          // Create initial array
-          $week_transactions[] = array(
-            'date' => $transaction_for_week_graph['date'],
-            'amount' => number_format( (float) abs( $transaction_for_week_graph['amount'] / 1000 ), 2, '.', '' ),
-          );
         }
       }
 		}
