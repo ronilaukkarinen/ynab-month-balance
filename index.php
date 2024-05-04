@@ -83,6 +83,10 @@ body {
   margin-right: 10px;
 }
 
+.value.smaller {
+  font-size: 42px !important;
+}
+
 .pre {
   display: none;
   font-size: 14px;
@@ -180,6 +184,8 @@ body {
   margin: 15px 0;
   width: auto;
   display: inline-flex;
+  flex-wrap: wrap;
+  max-width: 300px;
 }
 
 .item-wrapper-alt:first-of-type {
@@ -524,11 +530,29 @@ foreach ( $response_budget_transactions_for_week_graph as $budget_transaction_fo
 		// Sum all amounts together
 		if ( ! array_contains( $transaction_for_week_graph['account_id'], $ignored_accounts ) && ! str_contains( $transaction_for_week_graph['category_name'], 'Inflow' ) && null === $transaction_for_week_graph['transfer_account_id'] ) {
 
-      // Show only this week's transactions
-      if ( $transaction_for_week_graph['date'] >= date( 'Y-m-d', strtotime( '-7 day' ) ) ) {
+      // Get restaurant category e571f4e0-317f-4cf2-bc9c-2f152629bdd7
+      if ( 'e571f4e0-317f-4cf2-bc9c-2f152629bdd7' === $transaction_for_week_graph['category_id'] ) {
 
-        // Show only food category
-        if ( 'f6824431-03d1-4230-80de-126b66bac5d2' === $transaction_for_week_graph['category_id'] ) {
+        // Show only this month's transactions
+        if ( $transaction_for_week_graph['date'] >= date( 'Y-m-d', strtotime( 'first day of this month' ) ) ) {
+
+          // Sum all amounts together
+          $restaurant_money_spent_this_month += number_format( (float) abs( $transaction_for_week_graph['amount'] / 1000 ), 2, '.', '' );
+        }
+      }
+
+      // Show only food category
+      if ( 'f6824431-03d1-4230-80de-126b66bac5d2' === $transaction_for_week_graph['category_id'] ) {
+
+        // Show only this month's transactions
+        if ( $transaction_for_week_graph['date'] >= date( 'Y-m-d', strtotime( 'first day of this month' ) ) ) {
+
+          // Sum all amounts together
+          $food_money_spent_this_month += number_format( (float) abs( $transaction_for_week_graph['amount'] / 1000 ), 2, '.', '' );
+        }
+
+        // Show only this week's transactions
+        if ( $transaction_for_week_graph['date'] >= date( 'Y-m-d', strtotime( '-7 day' ) ) ) {
 
           // Create initial array
           $week_food_transactions[] = array(
@@ -608,11 +632,159 @@ $monthly_spendable_amount = str_replace( ',', '.', $monthly_spendable_amount );
       </div>
     </div>
 
-    <div class="item-wrapper item-wrapper-alt" style="margin-top: 0;">
+    <div class="item-wrapper item-wrapper-alt" style="margin-top: 0; display: none;">
       <p>
-        <span class="value green"><?php echo number_format( (float) $monthly_spendable_amount, 2, ',', '' ); ?> <span class="unit">&euro;</span></span><br />
+        <span class="value autocolor"><?php echo number_format( (float) $monthly_spendable_amount, 2, ',', '' ); ?> <span class="unit">&euro;</span></span><br />
         <span class="sub-label green">Yhteensä käytettävissä tänään</span></span>
       </p>
+    </div>
+
+    <!-- New budgets -->
+    <div class="item-wrapper item-wrapper-alt" style="margin-top: 0;">
+      <div class="bucket" style="
+          padding: 1.5rem;
+          border-radius: 10px;
+          background-color: rgb(255 255 255 / .1);
+          position: relative;
+        ">
+        <h2 style="
+            margin: 0;
+            font-size: 16px;
+            color: #aaa;
+            margin-bottom: .2rem;
+            font-weight: 600;
+        ">
+          Ruoka
+        </h2>
+
+        <?php
+        // Get days left on this month
+        $timestamp = strtotime( 'now' );
+        $days_remaining_this_month = (int) date( 't', $timestamp ) - (int) date( 'j', $timestamp );
+
+        // Get goal_target_month from
+        // curl -X 'GET' \
+        // 'https://api.ynab.com/v1/budgets/24d3a66a-0a98-4677-8875-c6d12986480a/months/current/categories/f6824431-03d1-4230-80de-126b66bac5d2' \
+        // -H 'accept: application/json'
+        $get_monthly_food_budget = callAPI( 'GET', $base . '/budgets/' . $budgetId . '/months/current/categories/f6824431-03d1-4230-80de-126b66bac5d2', false );
+        $response_monthly_food_budget = json_decode( $get_monthly_food_budget, true );
+
+        // Get goal target
+        $food_goal_target = $response_monthly_food_budget['data']['category']['goal_target_month'];
+
+        // If empty, return 1000
+        if ( empty( $food_goal_target ) ) {
+          $food_goal_target = 1000;
+        }
+
+        // Get daily amount for food
+        $food_money_left = $food_goal_target - $food_money_spent_this_month;
+        $daily_spendable_amount_for_food = round( $food_money_left / $days_remaining_this_month, 2 );
+
+        // Use comma for $daily_spendable_amount_for_food
+        $daily_spendable_amount_for_food = str_replace( '.', ',', $daily_spendable_amount_for_food );
+
+        // Use comma for $food_money_left
+        $food_money_left = str_replace( '.', ',', $food_money_left );
+
+        // Spent percentage
+        $food_spent_percentage = ( $food_money_spent_this_month / $food_goal_target ) * 100;
+        ?>
+
+        <div class="main">
+          <span class="value smaller"><?php echo $food_money_left; ?> <span class="unit">&euro;</span></span>
+          <span class="sub-label green">jäljellä</span>
+
+          <div class="daily" style="margin-top: 1rem;">
+            <span class="value smaller" style="font-size: 16px !important; opacity: .7;"><?php echo $daily_spendable_amount_for_food; ?> &euro; / päivä</span>
+          </div>
+        </div>
+
+        <div class="progress" style="
+          background-color: #292626;
+          position: absolute;
+          bottom: 0;
+          border-radius: 10px;
+          height:<?php echo $food_spent_percentage; ?>%;
+          width: 100%;
+          left: 0;
+          z-index: -1;
+          border-top-left-radius: 0;
+          border-top-right-radius: 0;
+        "></div>
+
+      </div><!-- .bucket -->
+
+      <div class="bucket" style="
+          padding: 1.5rem;
+          border-radius: 10px;
+          background-color: rgb(255 255 255 / .1);
+          position: relative;
+        ">
+        <h2 style="
+            margin: 0;
+            font-size: 16px;
+            color: #aaa;
+            margin-bottom: .2rem;
+            font-weight: 600;
+        ">
+          Ravintola
+        </h2>
+
+        <?php
+        // Get days left on this month
+        $timestamp = strtotime( 'now' );
+        $days_remaining_this_month = (int) date( 't', $timestamp ) - (int) date( 'j', $timestamp );
+
+        // Get goal_target_month
+        $get_monthly_restaurant_budget = callAPI( 'GET', $base . '/budgets/' . $budgetId . '/months/current/categories/e571f4e0-317f-4cf2-bc9c-2f152629bdd7', false );
+        $response_monthly_restaurant_budget = json_decode( $get_monthly_restaurant_budget, true );
+
+        // Get goal target
+        $restaurant_goal_target = $response_monthly_restaurant_budget['data']['category']['goal_target_month'];
+
+        // If empty, return 1000
+        if ( empty( $restaurant_goal_target ) ) {
+          $restaurant_goal_target = 300;
+        }
+
+        // Get daily amount for restaurant
+        $restaurant_money_left = $restaurant_goal_target - $restaurant_money_spent_this_month;
+        $daily_spendable_amount_for_restaurant = round( $restaurant_money_left / $days_remaining_this_month, 2 );
+
+        // Use comma for $daily_spendable_amount_for_restaurant
+        $daily_spendable_amount_for_restaurant = str_replace( '.', ',', $daily_spendable_amount_for_restaurant );
+
+        // Use comma for $restaurant_money_left
+        $restaurant_money_left = str_replace( '.', ',', $restaurant_money_left );
+
+        // Spent percentage
+        $restaurant_spent_percentage = ( $restaurant_money_spent_this_month / $restaurant_goal_target ) * 100;
+        ?>
+
+        <div class="main">
+          <span class="value smaller"><?php echo $restaurant_money_left; ?> <span class="unit">&euro;</span></span>
+          <span class="sub-label green">jäljellä</span>
+
+          <div class="daily" style="margin-top: 1rem;">
+            <span class="value smaller" style="font-size: 16px !important; opacity: .7;"><?php echo $daily_spendable_amount_for_restaurant; ?> &euro; / päivä</span>
+          </div>
+        </div>
+
+        <div class="progress" style="
+          background-color: #292626;
+          position: absolute;
+          bottom: 0;
+          border-radius: 10px;
+          height:<?php echo $restaurant_spent_percentage; ?>%;
+          width: 100%;
+          left: 0;
+          z-index: -1;
+          border-top-left-radius: 0;
+          border-top-right-radius: 0;
+        "></div>
+
+      </div><!-- .bucket -->
     </div>
 
   </div>
@@ -783,6 +955,21 @@ var options = {
 
 var chart = new ApexCharts(document.querySelector("#chart"), options);
 chart.render();
+
+// Load when window has loaded through
+window.addEventListener('load', function() {
+  // Auto color for positive and negative numbers
+  var values = document.querySelectorAll('.value');
+
+  // If has minus, then show as red, if not, show as green
+  values.forEach(function(value) {
+    if (value.innerText.includes('-')) {
+      value.classList.add('red');
+    } else {
+      value.classList.add('green');
+    }
+  });
+});
 </script>
 <?php }
 // Cache end
