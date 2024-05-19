@@ -771,7 +771,7 @@ $monthly_spendable_amount = str_replace( ',', '.', $monthly_spendable_amount );
           <span class="sub-label green">jäljellä</span>
 
           <div class="daily" style="margin-top: 1rem;">
-            <span class="value smaller" style="font-size: 16px !important; opacity: .7;"><?php echo $daily_spendable_amount_for_restaurant; ?> &euro; / päivä</span>
+            <span class="value smaller" style="font-size: 16px !important; opacity: .7;"><?php echo $daily_spendable_amount_for_restaurant * 7; ?> &euro; / viikko</span>
           </div>
         </div>
 
