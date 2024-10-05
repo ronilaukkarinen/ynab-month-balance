@@ -678,7 +678,7 @@ $monthly_spendable_amount = str_replace( ',', '.', $monthly_spendable_amount );
 
         // If empty, return 1000
         if ( empty( $food_goal_target ) ) {
-          $food_goal_target = 1000;
+          $food_goal_target = 1200;
         }
 
         // Get daily amount for food
@@ -693,6 +693,9 @@ $monthly_spendable_amount = str_replace( ',', '.', $monthly_spendable_amount );
 
         // Spent percentage
         $food_spent_percentage = ( $food_money_spent_this_month / $food_goal_target ) * 100;
+
+        // Use dots for $food_spent_percentage
+        $food_spent_percentage = str_replace( ',', '.', $food_spent_percentage );
         ?>
 
         <div class="main">
@@ -764,6 +767,9 @@ $monthly_spendable_amount = str_replace( ',', '.', $monthly_spendable_amount );
 
         // Spent percentage
         $restaurant_spent_percentage = ( $restaurant_money_spent_this_month / $restaurant_goal_target ) * 100;
+
+        // Use dots for $restaurant_spent_percentage
+        $restaurant_spent_percentage = str_replace( ',', '.', $restaurant_spent_percentage );
         ?>
 
         <div class="main">
